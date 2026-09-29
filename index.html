@@ -133,18 +133,30 @@
   <div class="bottom-sheet" id="dayBottomSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-drag-handle" id="sheetDragHandle"></div>
     <div class="sheet-header">
-      <div>
-        <div class="sheet-header-title" id="sheetTitle">1 de Janeiro de 2026</div>
-        <div class="sheet-header-subtitle" id="sheetSubtitle">
-          <span class="material-symbols-rounded" style="font-size:16px;">calendar_today</span>
-          <span id="sheetWeekday">Quinta-feira</span>
-          <span>•</span>
-          <span id="sheetEventsCount">4 eventos</span>
+      <div class="sheet-header-nav">
+        <button class="icon-btn sheet-nav-btn" id="btnPrevDaySheet" aria-label="Dia Anterior" title="Dia Anterior (ou desliza para a direita)">
+          <span class="material-symbols-rounded">chevron_left</span>
+        </button>
+        <div class="sheet-header-text">
+          <div class="sheet-header-title" id="sheetTitle">1 de Janeiro de 2026</div>
+          <div class="sheet-header-subtitle" id="sheetSubtitle">
+            <span class="material-symbols-rounded" style="font-size:16px;">calendar_today</span>
+            <span id="sheetWeekday">Quinta-feira</span>
+            <span>•</span>
+            <span id="sheetEventsCount">4 eventos</span>
+          </div>
         </div>
+        <button class="icon-btn sheet-nav-btn" id="btnNextDaySheet" aria-label="Dia Seguinte" title="Dia Seguinte (ou desliza para a esquerda)">
+          <span class="material-symbols-rounded">chevron_right</span>
+        </button>
       </div>
       <button class="icon-btn" id="btnCloseSheet" aria-label="Fechar Detalhes">
         <span class="material-symbols-rounded">close</span>
       </button>
+    </div>
+    <div class="sheet-swipe-hint">
+      <span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">swipe</span>
+      <span>Desliza para a esquerda ou direita para mudar de dia</span>
     </div>
     <div class="sheet-body" id="sheetEventsList">
       <!-- Inserido dinamicamente por JS -->

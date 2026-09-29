@@ -242,6 +242,47 @@ function setupEventListeners() {
   // Bottom Sheet
   document.getElementById('btnCloseSheet').addEventListener('click', closeBottomSheet);
   document.getElementById('sheetBackdrop').addEventListener('click', closeBottomSheet);
+  document.getElementById('btnPrevDaySheet').addEventListener('click', () => navigateDay(-1));
+  document.getElementById('btnNextDaySheet').addEventListener('click', () => navigateDay(1));
+
+  // Gestos de Swipe no Bottom Sheet para avançar/recuar dias
+  const sheetEl = document.getElementById('dayBottomSheet');
+  let sheetTouchStartX = 0;
+  let sheetTouchStartY = 0;
+  let sheetTouchStartTime = 0;
+
+  sheetEl.addEventListener('touchstart', (e) => {
+    sheetTouchStartX = e.touches[0].clientX;
+    sheetTouchStartY = e.touches[0].clientY;
+    sheetTouchStartTime = Date.now();
+  }, { passive: true });
+
+  sheetEl.addEventListener('touchend', (e) => {
+    const diffX = e.changedTouches[0].clientX - sheetTouchStartX;
+    const diffY = e.changedTouches[0].clientY - sheetTouchStartY;
+    const timeElapsed = Date.now() - sheetTouchStartTime;
+
+    // Detectar swipe horizontal nítido (mínimo 40px, mais horizontal que vertical e com tempo razoável)
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.25 && timeElapsed < 800) {
+      if (diffX < 0) {
+        navigateDay(1); // Swipe esquerda -> Dia seguinte
+      } else {
+        navigateDay(-1); // Swipe direita -> Dia anterior
+      }
+    }
+  }, { passive: true });
+
+  // Teclas de seta no teclado quando o Bottom Sheet está aberto
+  document.addEventListener('keydown', (e) => {
+    if (!sheetEl.classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') {
+      navigateDay(-1);
+    } else if (e.key === 'ArrowRight') {
+      navigateDay(1);
+    } else if (e.key === 'Escape') {
+      closeBottomSheet();
+    }
+  });
 
   // Gestos de Swipe no Calendário (Mudar mês com o dedo)
   const container = document.getElementById('mainViewContainer');
@@ -740,7 +781,54 @@ function renderFavoritesView(container) {
 // ============================================================================
 // BOTTOM SHEET (PAINEL DESLIZANTE DE DETALHES DO DIA)
 // ============================================================================
+function getAdjacentDate(dateStr, deltaDays) {
+  const parts = dateStr.split('-');
+  const y = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10) - 1;
+  const d = parseInt(parts[2], 10);
+  const dateObj = new Date(y, m, d);
+  dateObj.setDate(dateObj.getDate() + deltaDays);
+
+  const newY = dateObj.getFullYear();
+  const newM = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const newD = String(dateObj.getDate()).padStart(2, '0');
+  return `${newY}-${newM}-${newD}`;
+}
+
+function navigateDay(deltaDays) {
+  if (!state.selectedDate) return;
+  const newDateStr = getAdjacentDate(state.selectedDate, deltaDays);
+  const parts = newDateStr.split('-');
+  const newYear = parseInt(parts[0], 10);
+  const newMonthIdx = parseInt(parts[1], 10) - 1;
+
+  state.selectedDate = newDateStr;
+
+  // Se o mês mudou ao avançar/recuar dia, sincroniza o calendário de fundo
+  if (newMonthIdx !== state.currentMonth || newYear !== state.currentYear) {
+    state.currentYear = newYear;
+    state.currentMonth = newMonthIdx;
+    setMonth(newMonthIdx, true);
+  } else {
+    // Sincronizar célula selecionada na grelha do mês
+    document.querySelectorAll('.calendar-day-cell.selected').forEach(c => c.classList.remove('selected'));
+    const cell = document.querySelector(`.calendar-day-cell[data-date="${newDateStr}"]`);
+    if (cell) cell.classList.add('selected');
+  }
+
+  // Atualizar conteúdo do Bottom Sheet com animação de direção
+  const animDir = deltaDays > 0 ? 'next' : 'prev';
+  renderBottomSheetContent(newDateStr, animDir);
+}
+
 function openDayDetails(dateStr) {
+  state.selectedDate = dateStr;
+  renderBottomSheetContent(dateStr);
+  document.getElementById('sheetBackdrop').classList.add('open');
+  document.getElementById('dayBottomSheet').classList.add('open');
+}
+
+function renderBottomSheetContent(dateStr, animDirection = null) {
   const parts = dateStr.split('-');
   const year = parseInt(parts[0], 10);
   const monthIdx = parseInt(parts[1], 10) - 1;
@@ -757,6 +845,13 @@ function openDayDetails(dateStr) {
 
   const listEl = document.getElementById('sheetEventsList');
   listEl.innerHTML = '';
+
+  // Animação de transição suave se estiver a navegar
+  listEl.classList.remove('slide-next', 'slide-prev');
+  if (animDirection) {
+    void listEl.offsetWidth; // Forçar reflow para reiniciar animação
+    listEl.classList.add(animDirection === 'next' ? 'slide-next' : 'slide-prev');
+  }
 
   if (events.length === 0) {
     listEl.innerHTML = `
@@ -841,10 +936,6 @@ function openDayDetails(dateStr) {
       listEl.appendChild(item);
     });
   }
-
-  // Abrir Bottom Sheet
-  document.getElementById('sheetBackdrop').classList.add('open');
-  document.getElementById('dayBottomSheet').classList.add('open');
 }
 
 function closeBottomSheet() {

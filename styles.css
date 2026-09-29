@@ -789,26 +789,75 @@ body {
 }
 
 .sheet-header {
-  padding: 8px 20px 14px 20px;
+  padding: 8px 12px 10px 12px;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.sheet-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.sheet-nav-btn {
+  width: 38px;
+  height: 38px;
+  background-color: var(--bg-surface-variant);
+  border-radius: 50%;
+  color: var(--text-main);
+  transition: transform 0.15s ease, background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.sheet-nav-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.sheet-nav-btn:active {
+  transform: scale(0.9);
+}
+
+.sheet-header-text {
+  flex: 1;
+  text-align: center;
+  padding: 0 4px;
 }
 
 .sheet-header-title {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text-main);
+  line-height: 1.25;
 }
 
 .sheet-header-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   margin-top: 2px;
+}
+
+.sheet-swipe-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: var(--text-subtle);
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-light);
+  padding: 5px 12px;
+  user-select: none;
 }
 
 .sheet-body {
@@ -817,6 +866,37 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: transform 0.15s ease;
+}
+
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0.2;
+    transform: translateX(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0.2;
+    transform: translateX(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sheet-body.slide-next {
+  animation: slideInFromRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.sheet-body.slide-prev {
+  animation: slideInFromLeft 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .sheet-event-item {

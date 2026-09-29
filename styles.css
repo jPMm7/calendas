@@ -912,6 +912,61 @@ body {
   background: var(--bg-main);
   padding-bottom: 8px;
   margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.celeb-filter-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 6px 2px;
+  scrollbar-width: none;
+}
+
+.celeb-filter-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.celeb-chip {
+  background: var(--bg-surface-variant);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  padding: 4px 11px;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.celeb-chip:hover {
+  background: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.celeb-chip.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(26, 115, 232, 0.3);
+}
+
+.celeb-badge-category {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .celeb-card {

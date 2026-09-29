@@ -1072,7 +1072,8 @@ function switchSheetTab(tabName) {
 }
 
 // ============================================================================
-// ANIVERSÁRIOS DE FAMOSOS (API WIKIPÉDIA EM PORTUGUÊS)
+// ============================================================================
+// ANIVERSÁRIOS DE FAMOSOS (FILTRO INTELIGENTE DE NOTORIEDADE & WIKIPÉDIA)
 // ============================================================================
 async function fetchCelebrities(mm, dd) {
   const cacheKey = `${mm}-${dd}`;
@@ -1090,14 +1091,91 @@ async function fetchCelebrities(mm, dd) {
   const data = await resp.json();
   const rawBirths = data.births || [];
 
-  const list = rawBirths.map(b => {
+  const SPORT_KW = ['futebol', 'futebolista', 'jogador', 'nba', 'basquetebol', 'basquete', 'fórmula 1', 'f1', 'tenista', 'campeão', 'atleta', 'boxeador', 'ufc', 'motogp', 'treinador'];
+  const CINEMA_KW = ['ator', 'atriz', 'actor', 'actress', 'cineasta', 'realizador', 'diretor de cinema', 'comediante', 'humorista', 'apresentador', 'apresentadora'];
+  const MUSIC_KW = ['cantor', 'cantora', 'músico', 'música', 'compositor', 'rapper', 'guitarrista', 'banda', 'vocalista', 'dj', 'produtor musical', 'baterista'];
+  const HIST_KW = ['presidente', 'primeiro-ministro', 'prémio nobel', 'nobel', 'rei', 'rainha', 'imperador', 'cientista', 'físico', 'filósofo'];
+  const EXCLUDE_KW = ['bispo', 'arcebispo', 'padre', 'frade', 'cônego', 'teólogo', 'diácono', 'santo', 'botânico', 'entomologista', 'ornitólogo', 'filólogo', 'jurista', 'magistrado', 'deputado provincial', 'governador provincial', 'prefeito de', 'erudito', 'antiquário', 'lingüista'];
+
+  const PRESTIGE_KW = ['seleção', 'liga dos campeões', 'champions', 'copa do mundo', 'mundial', 'real madrid', 'barcelona', 'manchester', 'chelsea', 'bayern', 'juventus', 'psg', 'benfica', 'porto', 'sporting', 'lakers', 'bulls', 'warriors', 'celtics', 'ferrari', 'mercedes', 'red bull', 'bola de ouro', 'ballon d\'or', 'grammy', 'óscar', 'oscar', 'emmy', 'hollywood', 'platina', 'bilhões', 'melhor do mundo', 'um dos maiores', 'uma das maiores', 'lendário', 'famoso'];
+
+  const list = [];
+
+  for (const b of rawBirths) {
     const page = (b.pages && b.pages[0]) ? b.pages[0] : null;
-    const name = page ? (page.titles ? page.titles.normalized : page.title) : b.text.split(',')[0];
+    const name = page ? (page.titles ? page.titles.normalized : page.title) : (b.text || '').split(',')[0].trim();
     const thumb = (page && page.thumbnail) ? page.thumbnail.source : null;
     const extract = (page && page.extract) ? page.extract : (b.text || '');
     const wikiUrl = page && page.content_urls ? (page.content_urls.mobile ? page.content_urls.mobile.page : page.content_urls.desktop.page) : '';
-    
+    const fullText = (name + ' ' + (b.text || '') + ' ' + (page && page.description ? page.description : '') + ' ' + extract).toLowerCase();
     const birthYear = b.year || null;
+
+    // Excluir ruído obscuro
+    const isExcluded = EXCLUDE_KW.some(ex => {
+      const rx = new RegExp('\\b' + ex + '\\b', 'i');
+      return rx.test(fullText);
+    });
+
+    if (isExcluded) continue;
+
+    // Determinar Categoria
+    let categoryKey = 'outro';
+    let categoryLabel = '⭐ Notável';
+    let categoryBg = '#f1f3f4';
+    let categoryColor = '#5f6368';
+
+    if (SPORT_KW.some(kw => new RegExp('\\b' + kw, 'i').test(fullText))) {
+      if (fullText.includes('futebol')) {
+        categoryKey = 'futebol';
+        categoryLabel = '⚽ Futebol';
+        categoryBg = '#e6f4ea';
+        categoryColor = '#137333';
+      } else if (fullText.includes('nba') || fullText.includes('basquete')) {
+        categoryKey = 'nba';
+        categoryLabel = '🏀 NBA';
+        categoryBg = '#feefe3';
+        categoryColor = '#b06000';
+      } else {
+        categoryKey = 'desporto';
+        categoryLabel = '🏅 Desporto';
+        categoryBg = '#e6f4ea';
+        categoryColor = '#137333';
+      }
+    } else if (CINEMA_KW.some(kw => new RegExp('\\b' + kw, 'i').test(fullText))) {
+      categoryKey = 'cinema';
+      categoryLabel = '🎬 Cinema & TV';
+      categoryBg = '#fce8e6';
+      categoryColor = '#c5221f';
+    } else if (MUSIC_KW.some(kw => new RegExp('\\b' + kw, 'i').test(fullText))) {
+      categoryKey = 'musica';
+      categoryLabel = '🎵 Música';
+      categoryBg = '#f3e8fd';
+      categoryColor = '#7627bb';
+    } else if (HIST_KW.some(kw => new RegExp('\\b' + kw, 'i').test(fullText))) {
+      categoryKey = 'historia';
+      categoryLabel = '👑 Figura Notável';
+      categoryBg = '#fef7e0';
+      categoryColor = '#b06000';
+    }
+
+    // Cálculo da Notoriedade
+    let score = 0;
+    if (thumb) score += 20;
+    if (categoryKey !== 'outro') score += 25;
+
+    if (PRESTIGE_KW.some(p => fullText.includes(p))) {
+      score += 20;
+    }
+
+    if (birthYear && birthYear >= 1940) score += 10;
+    if (birthYear && birthYear < 1850) score -= 15;
+
+    if (b.text && b.text.length < 50 && thumb) {
+      score += 10;
+    }
+
+    const isTop = score >= 40 && thumb !== null;
+
     let ageStr = '';
     if (birthYear) {
       const currentYear = 2026;
@@ -1109,22 +1187,28 @@ async function fetchCelebrities(mm, dd) {
       }
     }
 
-    return {
+    list.push({
       name,
       year: birthYear,
       ageStr,
       extract,
       thumbnail: thumb,
       wikiUrl,
-      rawText: b.text || ''
-    };
-  });
+      rawText: b.text || '',
+      categoryKey,
+      categoryLabel,
+      categoryBg,
+      categoryColor,
+      score,
+      isTop
+    });
+  }
 
-  // Ordenar: figuras com foto primeiro, depois por ano mais recente
+  // Ordenação inteligente: top celebridades primeiro, depois por pontuação
   list.sort((a, b) => {
-    if (a.thumbnail && !b.thumbnail) return -1;
-    if (!a.thumbnail && b.thumbnail) return 1;
-    return (b.year || 0) - (a.year || 0);
+    if (a.isTop && !b.isTop) return -1;
+    if (!a.isTop && b.isTop) return 1;
+    return b.score - a.score || (b.year || 0) - (a.year || 0);
   });
 
   celebrityCache[cacheKey] = list;
@@ -1150,7 +1234,10 @@ async function loadCelebritiesForDate(dateStr, force = false, animDirection = nu
   if (celebrityCache[cacheKey] && !force) {
     renderCelebritiesList(celebrityCache[cacheKey], container);
     const celebsBadge = document.getElementById('sheetCelebsBadge');
-    if (celebsBadge) celebsBadge.textContent = celebrityCache[cacheKey].length;
+    if (celebsBadge) {
+      const topCount = celebrityCache[cacheKey].filter(i => i.isTop).length;
+      celebsBadge.textContent = topCount > 0 ? topCount : celebrityCache[cacheKey].length;
+    }
     return;
   }
 
@@ -1168,7 +1255,10 @@ async function loadCelebritiesForDate(dateStr, force = false, animDirection = nu
     if (state.selectedDate === dateStr) {
       renderCelebritiesList(list, container);
       const celebsBadge = document.getElementById('sheetCelebsBadge');
-      if (celebsBadge) celebsBadge.textContent = list.length;
+      if (celebsBadge) {
+        const topCount = list.filter(i => i.isTop).length;
+        celebsBadge.textContent = topCount > 0 ? topCount : list.length;
+      }
     }
   } catch (err) {
     console.error('Erro ao carregar aniversários:', err);
@@ -1201,29 +1291,87 @@ function renderCelebritiesList(list, container) {
     return;
   }
 
+  const topList = list.filter(item => item.isTop);
+  let activeFilter = topList.length > 0 ? 'top' : 'todos';
+
+  const futebolCount = list.filter(i => i.categoryKey === 'futebol').length;
+  const desportoCount = list.filter(i => i.categoryKey === 'desporto' || i.categoryKey === 'nba').length;
+  const cinemaCount = list.filter(i => i.categoryKey === 'cinema').length;
+  const musicaCount = list.filter(i => i.categoryKey === 'musica').length;
+
   container.innerHTML = `
     <div class="celeb-search-bar">
-      <input type="text" class="search-input" id="celebFilterInput" placeholder="Filtrar famosos deste dia (ex: futebol, ator, música...)" style="font-size:0.82rem; padding:8px 14px; width:100%;">
+      <input type="text" class="search-input" id="celebFilterInput" placeholder="Pesquisar famosos deste dia..." style="font-size:0.82rem; padding:8px 14px; width:100%;">
+      <div class="celeb-filter-chips" id="celebCategoryChips">
+        <button class="celeb-chip ${activeFilter === 'top' ? 'active' : ''}" data-cat="top">
+          <span>⭐ Top Famosos</span>
+          <span style="opacity:0.75;">(${topList.length || list.length})</span>
+        </button>
+        ${futebolCount > 0 ? `
+          <button class="celeb-chip" data-cat="futebol">
+            <span>⚽ Futebol</span>
+            <span style="opacity:0.75;">(${futebolCount})</span>
+          </button>
+        ` : ''}
+        ${desportoCount > 0 ? `
+          <button class="celeb-chip" data-cat="desporto">
+            <span>🏀 Desporto / NBA</span>
+            <span style="opacity:0.75;">(${desportoCount})</span>
+          </button>
+        ` : ''}
+        ${cinemaCount > 0 ? `
+          <button class="celeb-chip" data-cat="cinema">
+            <span>🎬 Cinema & TV</span>
+            <span style="opacity:0.75;">(${cinemaCount})</span>
+          </button>
+        ` : ''}
+        ${musicaCount > 0 ? `
+          <button class="celeb-chip" data-cat="musica">
+            <span>🎵 Música</span>
+            <span style="opacity:0.75;">(${musicaCount})</span>
+          </button>
+        ` : ''}
+        <button class="celeb-chip ${activeFilter === 'todos' ? 'active' : ''}" data-cat="todos">
+          <span>🌐 Todos</span>
+          <span style="opacity:0.75;">(${list.length})</span>
+        </button>
+      </div>
     </div>
     <div id="celebCardsList" style="display:flex; flex-direction:column; gap:10px;"></div>
   `;
 
   const cardsContainer = container.querySelector('#celebCardsList');
   const filterInput = container.querySelector('#celebFilterInput');
+  const chipsContainer = container.querySelector('#celebCategoryChips');
 
-  function updateFiltered(filterQuery = '') {
-    const q = normalizeText(filterQuery);
+  function updateDisplay() {
+    const q = normalizeText(filterInput.value);
     cardsContainer.innerHTML = '';
 
-    const filtered = list.filter(item => {
-      if (!q) return true;
-      return normalizeText(item.name).includes(q) || normalizeText(item.extract).includes(q) || normalizeText(item.rawText).includes(q);
-    });
+    let filtered = list;
+    if (activeFilter === 'top') {
+      filtered = topList.length > 0 ? topList : list.slice(0, 20);
+    } else if (activeFilter === 'futebol') {
+      filtered = list.filter(i => i.categoryKey === 'futebol');
+    } else if (activeFilter === 'desporto') {
+      filtered = list.filter(i => i.categoryKey === 'desporto' || i.categoryKey === 'nba');
+    } else if (activeFilter === 'cinema') {
+      filtered = list.filter(i => i.categoryKey === 'cinema');
+    } else if (activeFilter === 'musica') {
+      filtered = list.filter(i => i.categoryKey === 'musica');
+    }
+
+    if (q) {
+      filtered = filtered.filter(item => {
+        return normalizeText(item.name).includes(q) || normalizeText(item.extract).includes(q) || normalizeText(item.rawText).includes(q);
+      });
+    }
 
     if (filtered.length === 0) {
       cardsContainer.innerHTML = `
-        <div style="text-align:center; padding:25px; color:var(--text-muted); font-size:0.85rem;">
-          Nenhum famoso encontrado para "<strong>${escapeHtml(filterQuery)}</strong>".
+        <div style="text-align:center; padding:30px 16px; color:var(--text-muted); font-size:0.85rem;">
+          <span class="material-symbols-rounded" style="font-size:36px; opacity:0.4;">search_off</span>
+          <p style="margin-top:6px;">Nenhum famoso encontrado nesta categoria.</p>
         </div>
       `;
       return;
@@ -1247,6 +1395,9 @@ function renderCelebritiesList(list, container) {
           <div class="celeb-name-row">
             <span class="celeb-name">${escapeHtml(item.name)}</span>
             ${item.ageStr ? `<span class="celeb-year-pill">${escapeHtml(item.ageStr)}</span>` : ''}
+            <span class="celeb-badge-category" style="background:${item.categoryBg}; color:${item.categoryColor};">
+              ${escapeHtml(item.categoryLabel)}
+            </span>
           </div>
           <div class="celeb-extract">${escapeHtml(item.extract)}</div>
         </div>
@@ -1261,11 +1412,21 @@ function renderCelebritiesList(list, container) {
     });
   }
 
-  filterInput.addEventListener('input', (e) => {
-    updateFiltered(e.target.value);
+  chipsContainer.addEventListener('click', (e) => {
+    const chip = e.target.closest('.celeb-chip');
+    if (chip) {
+      chipsContainer.querySelectorAll('.celeb-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeFilter = chip.dataset.cat;
+      updateDisplay();
+    }
   });
 
-  updateFiltered('');
+  filterInput.addEventListener('input', () => {
+    updateDisplay();
+  });
+
+  updateDisplay();
 }
 
 function closeBottomSheet() {

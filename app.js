@@ -16,9 +16,14 @@ const state = {
   searchQuery: '',
   favorites: new Set(),
   theme: localStorage.getItem('cal_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+  selectedZodiacSign: localStorage.getItem('cal_user_sign') || 'aries',
+  activeSheetTab: 'events', // 'events' | 'celebrities'
   touchStartX: 0,
   touchStartY: 0
 };
+
+// Cache de Aniversários de Famosos por MM-DD
+const celebrityCache = {};
 
 // Nomes dos meses em português
 const MONTH_NAMES = [
@@ -173,9 +178,19 @@ function setupEventListeners() {
   document.getElementById('btnViewMonth').addEventListener('click', () => switchView('month'));
   document.getElementById('btnViewAgenda').addEventListener('click', () => switchView('agenda'));
 
+  // Toggle do Sol no Cabeçalho (Astrologia & Mística)
+  const btnToggleAstro = document.getElementById('btnToggleAstro');
+  if (btnToggleAstro) {
+    btnToggleAstro.addEventListener('click', toggleAstrologyView);
+  }
+
   // Abas Inferiores
   document.getElementById('tabMonth').addEventListener('click', () => switchView('month'));
   document.getElementById('tabAgenda').addEventListener('click', () => switchView('agenda'));
+  const tabAstro = document.getElementById('tabAstro');
+  if (tabAstro) {
+    tabAstro.addEventListener('click', () => switchView('astrology'));
+  }
   document.getElementById('tabSearch').addEventListener('click', () => openSearch());
   document.getElementById('tabFavorites').addEventListener('click', () => switchView('favorites'));
 
@@ -199,6 +214,13 @@ function setupEventListeners() {
     closeDrawer();
     switchView('favorites');
   });
+  const drawerNavAstro = document.getElementById('drawerNavAstro');
+  if (drawerNavAstro) {
+    drawerNavAstro.addEventListener('click', () => {
+      closeDrawer();
+      switchView('astrology');
+    });
+  }
   document.getElementById('drawerNavToday').addEventListener('click', () => {
     closeDrawer();
     jumpToToday();
@@ -244,6 +266,14 @@ function setupEventListeners() {
   document.getElementById('sheetBackdrop').addEventListener('click', closeBottomSheet);
   document.getElementById('btnPrevDaySheet').addEventListener('click', () => navigateDay(-1));
   document.getElementById('btnNextDaySheet').addEventListener('click', () => navigateDay(1));
+
+  // Abas do Bottom Sheet (Comemorações vs Aniversários Famosos)
+  const tabSheetEvt = document.getElementById('tabSheetEvents');
+  const tabSheetCeleb = document.getElementById('tabSheetCelebrities');
+  if (tabSheetEvt && tabSheetCeleb) {
+    tabSheetEvt.addEventListener('click', () => switchSheetTab('events'));
+    tabSheetCeleb.addEventListener('click', () => switchSheetTab('celebrities'));
+  }
 
   // Gestos de Swipe no Bottom Sheet para avançar/recuar dias
   const sheetEl = document.getElementById('dayBottomSheet');
@@ -398,34 +428,78 @@ function renderMonthSliderCounts() {
 }
 
 // ============================================================================
-// GESTÃO DE VISTAS (MÊS / PROGRAMAÇÃO / FAVORITOS)
+// GESTÃO DE VISTAS (MÊS / PROGRAMAÇÃO / FAVORITOS / ASTROLOGIA)
 // ============================================================================
+function toggleAstrologyView() {
+  if (state.activeView === 'astrology') {
+    switchView('month');
+  } else {
+    switchView('astrology');
+  }
+}
+
 function switchView(viewName) {
   state.activeView = viewName;
 
   // Atualizar segment control
   const btnMonth = document.getElementById('btnViewMonth');
   const btnAgenda = document.getElementById('btnViewAgenda');
-  btnMonth.classList.toggle('active', viewName === 'month');
-  btnAgenda.classList.toggle('active', viewName === 'agenda');
+  if (btnMonth) btnMonth.classList.toggle('active', viewName === 'month');
+  if (btnAgenda) btnAgenda.classList.toggle('active', viewName === 'agenda');
+
+  // Atualizar toggle do Sol no cabeçalho
+  const btnToggleAstro = document.getElementById('btnToggleAstro');
+  if (btnToggleAstro) {
+    btnToggleAstro.classList.toggle('active', viewName === 'astrology');
+    const toggleText = btnToggleAstro.querySelector('.astro-toggle-text');
+    if (toggleText) {
+      toggleText.textContent = viewName === 'astrology' ? 'Calendário' : 'Astrologia';
+    }
+    const icon = btnToggleAstro.querySelector('.astro-sun-icon');
+    if (icon) {
+      icon.textContent = viewName === 'astrology' ? 'calendar_month' : 'wb_sunny';
+    }
+  }
 
   // Atualizar abas inferiores
   document.querySelectorAll('.bottom-nav-bar .nav-tab-btn').forEach(btn => btn.classList.remove('active'));
-  if (viewName === 'month') document.getElementById('tabMonth').classList.add('active');
-  if (viewName === 'agenda') document.getElementById('tabAgenda').classList.add('active');
-  if (viewName === 'favorites') document.getElementById('tabFavorites').classList.add('active');
+  if (viewName === 'month') document.getElementById('tabMonth')?.classList.add('active');
+  if (viewName === 'agenda') document.getElementById('tabAgenda')?.classList.add('active');
+  if (viewName === 'favorites') document.getElementById('tabFavorites')?.classList.add('active');
+  if (viewName === 'astrology') document.getElementById('tabAstro')?.classList.add('active');
 
   const monthView = document.getElementById('monthView');
   const agendaView = document.getElementById('agendaView');
+  const astrologyView = document.getElementById('astrologyView');
+  const monthSliderBar = document.querySelector('.month-slider-bar');
+  const sliderContainer = document.querySelector('.slider-container');
+  const viewFilterBar = document.querySelector('.view-filter-bar');
 
-  if (viewName === 'month') {
-    monthView.style.display = 'flex';
-    agendaView.style.display = 'none';
-    renderMonthGrid();
+  if (viewName === 'astrology') {
+    document.body.classList.add('astro-theme-active');
+    if (monthView) monthView.style.display = 'none';
+    if (agendaView) agendaView.style.display = 'none';
+    if (astrologyView) astrologyView.style.display = 'block';
+    if (monthSliderBar) monthSliderBar.style.display = 'none';
+    if (sliderContainer) sliderContainer.style.display = 'none';
+    if (viewFilterBar) viewFilterBar.style.display = 'none';
+    renderAstrologyView();
   } else {
-    monthView.style.display = 'none';
-    agendaView.style.display = 'block';
-    renderAgendaView(viewName === 'favorites');
+    document.body.classList.remove('astro-theme-active');
+    if (astrologyView) astrologyView.style.display = 'none';
+    if (monthSliderBar) monthSliderBar.style.display = 'block';
+    if (sliderContainer) sliderContainer.style.display = 'flex';
+    if (viewFilterBar) viewFilterBar.style.display = 'flex';
+
+    if (viewName === 'month') {
+      if (monthView) monthView.style.display = 'flex';
+      if (agendaView) agendaView.style.display = 'none';
+      renderMonthGrid();
+    } else {
+      if (monthView) monthView.style.display = 'none';
+      if (agendaView) agendaView.style.display = 'block';
+      renderAgendaView(viewName === 'favorites');
+    }
   }
 
   updateHeaderTitle();
@@ -433,14 +507,21 @@ function switchView(viewName) {
 
 function updateHeaderTitle() {
   const label = document.getElementById('currentMonthYearLabel');
+  const quickStats = document.getElementById('quickStatsSummary');
+
+  if (state.activeView === 'astrology') {
+    if (label) label.textContent = 'Astrologia & Mística';
+    if (quickStats) quickStats.textContent = 'Trânsitos celestes diários';
+    return;
+  }
+
   if (state.activeView === 'favorites') {
-    label.textContent = 'Favoritos';
+    if (label) label.textContent = 'Favoritos';
   } else {
-    label.textContent = `${MONTH_NAMES[state.currentMonth]} ${state.currentYear}`;
+    if (label) label.textContent = `${MONTH_NAMES[state.currentMonth]} ${state.currentYear}`;
   }
 
   // Estatísticas rápidas
-  const quickStats = document.getElementById('quickStatsSummary');
   if (quickStats && state.data) {
     if (state.activeView === 'favorites') {
       quickStats.textContent = `${state.favorites.size} datas guardadas`;
@@ -853,6 +934,36 @@ function renderBottomSheetContent(dateStr, animDirection = null) {
     listEl.classList.add(animDirection === 'next' ? 'slide-next' : 'slide-prev');
   }
 
+  // Atualizar Badges das Abas
+  const eventsBadge = document.getElementById('sheetEventsBadge');
+  if (eventsBadge) eventsBadge.textContent = events.length;
+
+  const mm = String(monthIdx + 1).padStart(2, '0');
+  const dd = String(day).padStart(2, '0');
+  const cacheKey = `${mm}-${dd}`;
+  const celebsBadge = document.getElementById('sheetCelebsBadge');
+  if (celebsBadge) {
+    if (celebrityCache[cacheKey]) {
+      celebsBadge.textContent = celebrityCache[cacheKey].length;
+    } else {
+      celebsBadge.textContent = '...';
+      fetchCelebrities(mm, dd).then(list => {
+        if (celebsBadge && state.selectedDate === dateStr) {
+          celebsBadge.textContent = list.length;
+        }
+      }).catch(() => {
+        if (celebsBadge && state.selectedDate === dateStr) {
+          celebsBadge.textContent = '0';
+        }
+      });
+    }
+  }
+
+  // Se o utilizador estiver na aba de famosos, atualiza a lista de famosos
+  if (state.activeSheetTab === 'celebrities') {
+    loadCelebritiesForDate(dateStr, false, animDirection);
+  }
+
   if (events.length === 0) {
     listEl.innerHTML = `
       <div style="text-align: center; color: var(--text-muted); padding: 30px;">
@@ -938,9 +1049,230 @@ function renderBottomSheetContent(dateStr, animDirection = null) {
   }
 }
 
+// Alternar Abas no Bottom Sheet (Comemorações vs Aniversários Famosos)
+function switchSheetTab(tabName) {
+  state.activeSheetTab = tabName;
+  const tabSheetEvt = document.getElementById('tabSheetEvents');
+  const tabSheetCeleb = document.getElementById('tabSheetCelebrities');
+  const eventsList = document.getElementById('sheetEventsList');
+  const celebsList = document.getElementById('sheetCelebritiesList');
+
+  if (tabName === 'events') {
+    if (tabSheetEvt) tabSheetEvt.classList.add('active');
+    if (tabSheetCeleb) tabSheetCeleb.classList.remove('active');
+    if (eventsList) eventsList.style.display = 'flex';
+    if (celebsList) celebsList.style.display = 'none';
+  } else {
+    if (tabSheetCeleb) tabSheetCeleb.classList.add('active');
+    if (tabSheetEvt) tabSheetEvt.classList.remove('active');
+    if (eventsList) eventsList.style.display = 'none';
+    if (celebsList) celebsList.style.display = 'flex';
+    loadCelebritiesForDate(state.selectedDate);
+  }
+}
+
+// ============================================================================
+// ANIVERSÁRIOS DE FAMOSOS (API WIKIPÉDIA EM PORTUGUÊS)
+// ============================================================================
+async function fetchCelebrities(mm, dd) {
+  const cacheKey = `${mm}-${dd}`;
+  if (celebrityCache[cacheKey]) {
+    return celebrityCache[cacheKey];
+  }
+
+  const url = `https://pt.wikipedia.org/api/rest_v1/feed/onthisday/births/${mm}/${dd}`;
+  const resp = await fetch(url, {
+    headers: { 'Accept': 'application/json' }
+  });
+  if (!resp.ok) {
+    throw new Error('Erro ao obter dados da Wikipédia');
+  }
+  const data = await resp.json();
+  const rawBirths = data.births || [];
+
+  const list = rawBirths.map(b => {
+    const page = (b.pages && b.pages[0]) ? b.pages[0] : null;
+    const name = page ? (page.titles ? page.titles.normalized : page.title) : b.text.split(',')[0];
+    const thumb = (page && page.thumbnail) ? page.thumbnail.source : null;
+    const extract = (page && page.extract) ? page.extract : (b.text || '');
+    const wikiUrl = page && page.content_urls ? (page.content_urls.mobile ? page.content_urls.mobile.page : page.content_urls.desktop.page) : '';
+    
+    const birthYear = b.year || null;
+    let ageStr = '';
+    if (birthYear) {
+      const currentYear = 2026;
+      const age = currentYear - birthYear;
+      if (b.text && (b.text.includes('(m.') || b.text.includes('morte em') || b.text.includes('falecido'))) {
+        ageStr = `Nasc. ${birthYear}`;
+      } else {
+        ageStr = `🎂 ${birthYear} (${age} anos)`;
+      }
+    }
+
+    return {
+      name,
+      year: birthYear,
+      ageStr,
+      extract,
+      thumbnail: thumb,
+      wikiUrl,
+      rawText: b.text || ''
+    };
+  });
+
+  // Ordenar: figuras com foto primeiro, depois por ano mais recente
+  list.sort((a, b) => {
+    if (a.thumbnail && !b.thumbnail) return -1;
+    if (!a.thumbnail && b.thumbnail) return 1;
+    return (b.year || 0) - (a.year || 0);
+  });
+
+  celebrityCache[cacheKey] = list;
+  return list;
+}
+
+async function loadCelebritiesForDate(dateStr, force = false, animDirection = null) {
+  const container = document.getElementById('sheetCelebritiesList');
+  if (!container) return;
+
+  const parts = dateStr.split('-');
+  const mm = parts[1];
+  const dd = parts[2];
+  const cacheKey = `${mm}-${dd}`;
+
+  container.classList.remove('slide-next', 'slide-prev');
+  if (animDirection) {
+    void container.offsetWidth;
+    container.classList.add(animDirection === 'next' ? 'slide-next' : 'slide-prev');
+  }
+
+  // Se já está em cache
+  if (celebrityCache[cacheKey] && !force) {
+    renderCelebritiesList(celebrityCache[cacheKey], container);
+    const celebsBadge = document.getElementById('sheetCelebsBadge');
+    if (celebsBadge) celebsBadge.textContent = celebrityCache[cacheKey].length;
+    return;
+  }
+
+  // Loading spinner elegante
+  container.innerHTML = `
+    <div class="celeb-loading-wrap">
+      <div class="celeb-spinner"></div>
+      <p style="font-size:0.88rem; font-weight:600; color:var(--text-main);">A procurar aniversários de figuras públicas...</p>
+      <p style="font-size:0.75rem; color:var(--text-subtle);">Dados em tempo real da Wikipédia</p>
+    </div>
+  `;
+
+  try {
+    const list = await fetchCelebrities(mm, dd);
+    if (state.selectedDate === dateStr) {
+      renderCelebritiesList(list, container);
+      const celebsBadge = document.getElementById('sheetCelebsBadge');
+      if (celebsBadge) celebsBadge.textContent = list.length;
+    }
+  } catch (err) {
+    console.error('Erro ao carregar aniversários:', err);
+    if (state.selectedDate === dateStr) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:35px 16px; color:var(--text-muted);">
+          <span class="material-symbols-rounded" style="font-size:44px; color:#e52592; opacity:0.6;">cake</span>
+          <p style="margin-top:10px; font-weight:600; color:var(--text-main);">Não foi possível carregar os aniversários</p>
+          <p style="font-size:0.78rem; margin-top:4px;">Verifica a tua ligação à internet e tenta novamente.</p>
+          <button class="sheet-action-btn" id="btnRetryCelebs" style="margin-top:12px;">
+            <span class="material-symbols-rounded" style="font-size:16px;">refresh</span>
+            Tentar Novamente
+          </button>
+        </div>
+      `;
+      const retryBtn = document.getElementById('btnRetryCelebs');
+      if (retryBtn) retryBtn.addEventListener('click', () => loadCelebritiesForDate(dateStr, true));
+    }
+  }
+}
+
+function renderCelebritiesList(list, container) {
+  if (!list || list.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 16px; color:var(--text-muted);">
+        <span class="material-symbols-rounded" style="font-size:44px; opacity:0.4;">cake</span>
+        <p style="margin-top:8px; font-weight:600;">Sem aniversários registados para este dia.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="celeb-search-bar">
+      <input type="text" class="search-input" id="celebFilterInput" placeholder="Filtrar famosos deste dia (ex: futebol, ator, música...)" style="font-size:0.82rem; padding:8px 14px; width:100%;">
+    </div>
+    <div id="celebCardsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+  `;
+
+  const cardsContainer = container.querySelector('#celebCardsList');
+  const filterInput = container.querySelector('#celebFilterInput');
+
+  function updateFiltered(filterQuery = '') {
+    const q = normalizeText(filterQuery);
+    cardsContainer.innerHTML = '';
+
+    const filtered = list.filter(item => {
+      if (!q) return true;
+      return normalizeText(item.name).includes(q) || normalizeText(item.extract).includes(q) || normalizeText(item.rawText).includes(q);
+    });
+
+    if (filtered.length === 0) {
+      cardsContainer.innerHTML = `
+        <div style="text-align:center; padding:25px; color:var(--text-muted); font-size:0.85rem;">
+          Nenhum famoso encontrado para "<strong>${escapeHtml(filterQuery)}</strong>".
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'celeb-card';
+
+      const initial = item.name ? item.name.charAt(0).toUpperCase() : '★';
+      const avatarHtml = item.thumbnail
+        ? `<img src="${item.thumbnail}" class="celeb-avatar" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'celeb-avatar-placeholder\\'>${initial}</div><span class=\\'celeb-cake-badge\\'>🎂</span>';">`
+        : `<div class="celeb-avatar-placeholder">${initial}</div>`;
+
+      card.innerHTML = `
+        <div class="celeb-avatar-wrap">
+          ${avatarHtml}
+          <span class="celeb-cake-badge">🎂</span>
+        </div>
+        <div class="celeb-content">
+          <div class="celeb-name-row">
+            <span class="celeb-name">${escapeHtml(item.name)}</span>
+            ${item.ageStr ? `<span class="celeb-year-pill">${escapeHtml(item.ageStr)}</span>` : ''}
+          </div>
+          <div class="celeb-extract">${escapeHtml(item.extract)}</div>
+        </div>
+        ${item.wikiUrl ? `
+          <a href="${item.wikiUrl}" target="_blank" rel="noopener noreferrer" class="celeb-wiki-link" title="Ver na Wikipédia">
+            <span class="material-symbols-rounded" style="font-size:18px;">open_in_new</span>
+          </a>
+        ` : ''}
+      `;
+
+      cardsContainer.appendChild(card);
+    });
+  }
+
+  filterInput.addEventListener('input', (e) => {
+    updateFiltered(e.target.value);
+  });
+
+  updateFiltered('');
+}
+
 function closeBottomSheet() {
   document.getElementById('sheetBackdrop').classList.remove('open');
   document.getElementById('dayBottomSheet').classList.remove('open');
+  // Repor aba padrão para Comemorações
+  switchSheetTab('events');
 }
 
 // ============================================================================
@@ -1146,4 +1478,221 @@ function escapeHtml(text) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// ============================================================================
+// VISTA DE ASTROLOGIA & MÍSTICA DIÁRIA
+// ============================================================================
+function renderAstrologyView() {
+  if (!window.AstroService) {
+    console.error('AstroService não encontrado.');
+    return;
+  }
+
+  // Basear a data na data atualmente selecionada ou hoje
+  const now = new Date();
+  let targetDate = now;
+  if (state.selectedDate) {
+    const [y, m, d] = state.selectedDate.split('-').map(Number);
+    targetDate = new Date(y, m - 1, d);
+  }
+
+  // 1. Hero Date & Badge
+  const heroDate = document.getElementById('astroHeroDate');
+  const day = targetDate.getDate();
+  const monthName = MONTH_NAMES[targetDate.getMonth()];
+  const year = targetDate.getFullYear();
+  if (heroDate) {
+    heroDate.textContent = `Céu de ${day} de ${monthName} de ${year}`;
+  }
+
+  // 2. Fase Lunar
+  const moon = AstroService.getMoonData(targetDate);
+  const moonEmoji = document.getElementById('moonPhaseEmoji');
+  const moonName = document.getElementById('moonPhaseName');
+  const moonPct = document.getElementById('moonIlluminationPct');
+  const moonFill = document.getElementById('moonProgressFill');
+  const moonDesc = document.getElementById('moonPhaseDesc');
+  const moonNextEvents = document.getElementById('moonNextEvents');
+  const drawerMoonBadge = document.getElementById('drawerMoonPhaseBadge');
+
+  if (moonEmoji) moonEmoji.textContent = moon.phaseIcon;
+  if (drawerMoonBadge) drawerMoonBadge.textContent = moon.phaseIcon;
+  if (moonName) moonName.textContent = moon.phaseName;
+  if (moonPct) moonPct.textContent = `${moon.illumination}%`;
+  if (moonFill) moonFill.style.width = `${moon.illumination}%`;
+  if (moonDesc) moonDesc.textContent = moon.phaseDescription;
+
+  // Renderizar esfera lunar com sombra visual
+  renderMoonSphere(moon.normalizedPhase, moon.illumination);
+
+  if (moonNextEvents && moon.nextEvents) {
+    moonNextEvents.innerHTML = moon.nextEvents.slice(0, 3).map(ev => `
+      <div class="next-event-chip">
+        <span class="event-name">${ev.name}</span>
+        <span class="event-days">${ev.daysAway === 0 ? 'Hoje' : `em ${ev.daysAway}d (${ev.formattedDate})`}</span>
+      </div>
+    `).join('');
+  }
+
+  // 3. Trânsito Solar
+  const sun = AstroService.getSunTransit(targetDate);
+  const sunSymbol = document.getElementById('sunSignSymbol');
+  const sunName = document.getElementById('sunSignName');
+  const sunElement = document.getElementById('sunElementPill');
+  const sunRuler = document.getElementById('sunRulerPill');
+  const sunDegree = document.getElementById('sunDegreePill');
+  const sunConstName = document.getElementById('sunConstellationName');
+  const sunConstExpl = document.getElementById('sunConstellationExplainer');
+
+  if (sunSymbol) sunSymbol.textContent = sun.sign.symbol;
+  if (sunName) sunName.textContent = `${sun.sign.name} (${sun.sign.archetype})`;
+  if (sunElement) sunElement.textContent = `Elemento: ${sun.sign.element}`;
+  if (sunRuler) sunRuler.textContent = `Regente: ${sun.sign.ruler}`;
+  if (sunDegree) sunDegree.textContent = `Grau: ~${sun.degreeEstimate}°`;
+  if (sunConstName) sunConstName.textContent = sun.astronomicalConstellation;
+  if (sunConstExpl) sunConstExpl.textContent = sun.explanation;
+
+  // 4. Radar de Retrogradação
+  const retro = AstroService.getRetrogradeStatus(targetDate);
+  
+  // Mercúrio
+  const mercStatusPill = document.getElementById('mercuryStatusPill');
+  const mercStatusText = document.getElementById('mercuryStatusText');
+  const mercAdvice = document.getElementById('mercuryAdvice');
+  const mercDates = document.getElementById('mercuryDates');
+  if (mercStatusPill && mercStatusText) {
+    mercStatusPill.className = `retrograde-status-pill ${retro.mercury.badgeClass}`;
+    mercStatusText.textContent = retro.mercury.statusText;
+  }
+  if (mercAdvice) mercAdvice.textContent = retro.mercury.advice;
+  if (mercDates) mercDates.textContent = retro.mercury.periodText;
+
+  // Vénus
+  const venusStatusPill = document.getElementById('venusStatusPill');
+  const venusStatusText = document.getElementById('venusStatusText');
+  const venusAdvice = document.getElementById('venusAdvice');
+  const venusDates = document.getElementById('venusDates');
+  if (venusStatusPill && venusStatusText) {
+    venusStatusPill.className = `retrograde-status-pill ${retro.venus.badgeClass}`;
+    venusStatusText.textContent = retro.venus.statusText;
+  }
+  if (venusAdvice) venusAdvice.textContent = retro.venus.advice;
+  if (venusDates) venusDates.textContent = retro.venus.periodText;
+
+  // 5. Horóscopo do Dia
+  renderZodiacSignChips(targetDate);
+}
+
+function renderMoonSphere(normalizedPhase, illumination) {
+  const sphere = document.getElementById('moonVisualSphere');
+  if (!sphere) return;
+
+  sphere.innerHTML = `
+    <svg viewBox="0 0 100 100" class="moon-svg">
+      <defs>
+        <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fffde7" stop-opacity="1"/>
+          <stop offset="70%" stop-color="#fff9c4" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#ffe082" stop-opacity="0.5"/>
+        </radialGradient>
+        <radialGradient id="darkSide" cx="30%" cy="30%" r="70%">
+          <stop offset="0%" stop-color="#374151" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#111827" stop-opacity="1"/>
+        </radialGradient>
+        <filter id="moonSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="glow"/>
+          <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+        </filter>
+      </defs>
+      <!-- Halo místico suave -->
+      <circle cx="50" cy="50" r="46" fill="rgba(255, 235, 59, 0.12)" filter="url(#moonSoftGlow)" />
+      <!-- Base do corpo escuro -->
+      <circle cx="50" cy="50" r="42" fill="url(#darkSide)"/>
+      <!-- Camada iluminada -->
+      ${getMoonSvgPath(normalizedPhase)}
+      <!-- Crateras subtis -->
+      <circle cx="38" cy="42" r="5" fill="rgba(0,0,0,0.06)" />
+      <circle cx="62" cy="58" r="8" fill="rgba(0,0,0,0.05)" />
+      <circle cx="48" cy="65" r="4" fill="rgba(0,0,0,0.05)" />
+    </svg>
+  `;
+}
+
+function getMoonSvgPath(phase) {
+  if (phase < 0.03 || phase >= 0.97) {
+    return ''; // Lua Nova
+  }
+  if (phase >= 0.47 && phase <= 0.53) {
+    return '<circle cx="50" cy="50" r="42" fill="url(#moonGlow)"/>'; // Lua Cheia
+  }
+
+  const r = 42;
+  const isWaxing = phase < 0.5;
+  const curveX = (Math.cos(phase * 2 * Math.PI) * r).toFixed(1);
+
+  if (isWaxing) {
+    return `<path d="M 50,${50 - r} A ${r},${r} 0 0,1 50,${50 + r} A ${Math.abs(curveX)},${r} 0 0,${curveX < 0 ? 0 : 1} 50,${50 - r}" fill="url(#moonGlow)"/>`;
+  } else {
+    return `<path d="M 50,${50 - r} A ${r},${r} 0 0,0 50,${50 + r} A ${Math.abs(curveX)},${r} 0 0,${curveX < 0 ? 1 : 0} 50,${50 - r}" fill="url(#moonGlow)"/>`;
+  }
+}
+
+function renderZodiacSignChips(targetDate) {
+  const container = document.getElementById('zodiacChipsBar');
+  if (!container || !window.AstroService) return;
+
+  const signs = AstroService.getZodiacSigns();
+  container.innerHTML = signs.map(s => `
+    <button class="zodiac-chip-btn ${s.id === state.selectedZodiacSign ? 'active' : ''}" data-sign="${s.id}">
+      <span class="zodiac-chip-symbol">${s.symbol}</span>
+      <span class="zodiac-chip-name">${s.name.split(' ')[0]}</span>
+    </button>
+  `).join('');
+
+  container.querySelectorAll('.zodiac-chip-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const signId = btn.dataset.sign;
+      state.selectedZodiacSign = signId;
+      localStorage.setItem('cal_user_sign', signId);
+      
+      container.querySelectorAll('.zodiac-chip-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+
+      loadSignHoroscope(signId, targetDate);
+    });
+  });
+
+  loadSignHoroscope(state.selectedZodiacSign, targetDate);
+}
+
+async function loadSignHoroscope(signId, targetDate) {
+  const signs = AstroService.getZodiacSigns();
+  const sign = signs.find(s => s.id === signId) || signs[0];
+
+  const largeSymbol = document.getElementById('horoLargeSymbol');
+  const signTitle = document.getElementById('horoSignTitle');
+  const signDates = document.getElementById('horoSignDates');
+  const vibePill = document.getElementById('horoVibePill');
+  const adviceText = document.getElementById('horoAdviceText');
+  const metaElem = document.getElementById('horoMetaElement');
+  const metaRuler = document.getElementById('horoMetaRuler');
+  const metaColor = document.getElementById('horoMetaColor');
+  const metaNumber = document.getElementById('horoMetaNumber');
+
+  if (largeSymbol) largeSymbol.textContent = sign.symbol;
+  if (signTitle) signTitle.textContent = sign.name;
+  if (signDates) signDates.textContent = sign.dates;
+
+  if (adviceText) adviceText.textContent = 'A sintonizar frequências estelares...';
+
+  const data = await AstroService.getDailyHoroscope(signId, targetDate);
+
+  if (vibePill) vibePill.textContent = data.vibe;
+  if (adviceText) adviceText.textContent = data.advice;
+  if (metaElem) metaElem.textContent = data.element;
+  if (metaRuler) metaRuler.textContent = data.ruler;
+  if (metaColor) metaColor.textContent = data.luckyColor;
+  if (metaNumber) metaNumber.textContent = data.luckyNumber;
 }

@@ -43,6 +43,12 @@
     </div>
 
     <div class="header-right">
+      <!-- Toggle Slick de Astrologia / Sol -->
+      <button class="btn-astro-toggle" id="btnToggleAstro" aria-label="Alternar Astrologia e Mística" title="Alternar entre Datas e Astrologia">
+        <span class="material-symbols-rounded astro-sun-icon">wb_sunny</span>
+        <span class="astro-toggle-text">Astrologia</span>
+      </button>
+
       <button class="btn-today" id="btnToday" title="Ir instantaneamente para hoje">Hoje</button>
       <button class="icon-btn" id="btnOpenSearch" aria-label="Pesquisar">
         <span class="material-symbols-rounded">search</span>
@@ -124,6 +130,201 @@
       <!-- Gerado dinamicamente por JS -->
     </div>
 
+    <!-- VISTA ASTROLOGIA & MÍSTICA DIÁRIA -->
+    <div class="astrology-view" id="astrologyView" style="display: none;">
+      <!-- Hero Banner -->
+      <section class="astro-hero-card">
+        <div class="astro-hero-content">
+          <div class="astro-hero-badge">
+            <span class="material-symbols-rounded">auto_awesome</span>
+            <span>Mística & Céu Diário</span>
+          </div>
+          <h2 class="astro-hero-title" id="astroHeroDate">Hoje no Céu</h2>
+          <p class="astro-hero-subtitle" id="astroHeroSubtitle">Trânsitos celestes, energias planetárias e conselho estelar diário.</p>
+        </div>
+      </section>
+
+      <!-- Grelha Principal: Lua & Sol -->
+      <div class="astro-grid-two">
+        <!-- Cartão da Fase da Lua -->
+        <section class="astro-card moon-phase-card" id="cardMoonPhase">
+          <div class="astro-card-header">
+            <div class="astro-card-title-group">
+              <span class="astro-card-tag">Luminar Noturno</span>
+              <h3 class="astro-card-title">Fase Lunar Atual</h3>
+            </div>
+            <span class="astro-card-icon" id="moonPhaseEmoji">🌕</span>
+          </div>
+
+          <div class="moon-display-wrap">
+            <div class="moon-visual-sphere" id="moonVisualSphere">
+              <div class="moon-disc">
+                <div class="moon-shadow" id="moonShadowDisc"></div>
+              </div>
+            </div>
+            <div class="moon-phase-info">
+              <div class="moon-phase-name" id="moonPhaseName">A calcular...</div>
+              <div class="moon-illumination-row">
+                <span class="moon-illumination-pct" id="moonIlluminationPct">--%</span>
+                <span class="moon-illumination-label">iluminação</span>
+              </div>
+              <div class="moon-progress-bar">
+                <div class="moon-progress-fill" id="moonProgressFill" style="width: 50%;"></div>
+              </div>
+              <p class="moon-phase-desc" id="moonPhaseDesc">...</p>
+            </div>
+          </div>
+
+          <div class="moon-next-events" id="moonNextEvents">
+            <!-- Eventos gerados por JS -->
+          </div>
+        </section>
+
+        <!-- Cartão do Trânsito Solar -->
+        <section class="astro-card sun-transit-card" id="cardSunTransit">
+          <div class="astro-card-header">
+            <div class="astro-card-title-group">
+              <span class="astro-card-tag">Astro Rei</span>
+              <h3 class="astro-card-title">Trânsito Solar</h3>
+            </div>
+            <span class="astro-card-icon" style="color: #f59e0b;">
+              <span class="material-symbols-rounded" style="font-size:28px;">wb_sunny</span>
+            </span>
+          </div>
+
+          <div class="sun-transit-hero">
+            <div class="sun-sign-symbol" id="sunSignSymbol">♎</div>
+            <div class="sun-sign-details">
+              <div class="sun-sign-name" id="sunSignName">Balança (Libra)</div>
+              <div class="sun-sign-meta" id="sunSignMeta">
+                <span class="astro-pill" id="sunElementPill">Ar</span>
+                <span class="astro-pill" id="sunRulerPill">Regente: Vénus</span>
+                <span class="astro-pill" id="sunDegreePill">Grau: 7°</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sun-constellation-box">
+            <div class="constellation-header">
+              <span class="material-symbols-rounded" style="font-size: 18px; color: #818cf8;">explore</span>
+              <strong>Constelação Real de Fundo:</strong>
+              <span id="sunConstellationName" style="color: var(--primary); font-weight:600;">Virgo</span>
+            </div>
+            <p class="constellation-explainer" id="sunConstellationExplainer">
+              Devido à precessão dos equinócios, o signo tropical e a constelação astronómica física diferem cerca de um signo.
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Cartão: Radar Planetário (Mercúrio & Vénus Retrógrados) -->
+      <section class="astro-card retrograde-card" id="cardRetrogrades">
+        <div class="astro-card-header">
+          <div class="astro-card-title-group">
+            <span class="astro-card-tag">Movimento Aparente</span>
+            <h3 class="astro-card-title">Radar de Retrogradação</h3>
+          </div>
+          <span class="astro-card-icon" style="color: #6366f1;">
+            <span class="material-symbols-rounded" style="font-size:26px;">sync</span>
+          </span>
+        </div>
+
+        <div class="retrograde-grid">
+          <!-- Mercúrio -->
+          <div class="planet-retrograde-box" id="mercuryRetroBox">
+            <div class="planet-retrograde-top">
+              <div class="planet-id">
+                <span class="planet-symbol">☿</span>
+                <div>
+                  <h4 class="planet-name">Mercúrio</h4>
+                  <span class="planet-domain">Comunicação • Viagens • Tecnologia</span>
+                </div>
+              </div>
+              <div class="retrograde-status-pill" id="mercuryStatusPill">
+                <span class="status-dot"></span>
+                <span id="mercuryStatusText">A verificar...</span>
+              </div>
+            </div>
+            <p class="planet-advice" id="mercuryAdvice">...</p>
+            <div class="planet-dates" id="mercuryDates">...</div>
+          </div>
+
+          <!-- Vénus -->
+          <div class="planet-retrograde-box" id="venusRetroBox">
+            <div class="planet-retrograde-top">
+              <div class="planet-id">
+                <span class="planet-symbol">♀</span>
+                <div>
+                  <h4 class="planet-name">Vénus</h4>
+                  <span class="planet-domain">Relações • Finanças • Arte & Valores</span>
+                </div>
+              </div>
+              <div class="retrograde-status-pill" id="venusStatusPill">
+                <span class="status-dot"></span>
+                <span id="venusStatusText">A verificar...</span>
+              </div>
+            </div>
+            <p class="planet-advice" id="venusAdvice">...</p>
+            <div class="planet-dates" id="venusDates">...</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cartão: Horóscopo do Dia dos 12 Signos -->
+      <section class="astro-card horoscope-card" id="cardHoroscope">
+        <div class="astro-card-header">
+          <div class="astro-card-title-group">
+            <span class="astro-card-tag">Vibe & Orientação</span>
+            <h3 class="astro-card-title">Horóscopo Diário dos 12 Signos</h3>
+          </div>
+          <span class="astro-card-icon" style="color: #ec4899;">
+            <span class="material-symbols-rounded" style="font-size:26px;">stars</span>
+          </span>
+        </div>
+
+        <!-- Seletor de Signos (Slider de Chips) -->
+        <div class="zodiac-chips-bar" id="zodiacChipsBar">
+          <!-- Gerado dinamicamente por JS -->
+        </div>
+
+        <!-- Conteúdo do Signo Ativo -->
+        <div class="horoscope-active-content" id="horoscopeActiveContent">
+          <div class="horoscope-sign-header">
+            <div class="horoscope-symbol-large" id="horoLargeSymbol">♈</div>
+            <div>
+              <div class="horoscope-sign-title" id="horoSignTitle">Carneiro</div>
+              <div class="horoscope-sign-dates" id="horoSignDates">21 Mar - 19 Abr</div>
+            </div>
+            <div class="horoscope-vibe-pill" id="horoVibePill">Foco & Vitalidade</div>
+          </div>
+
+          <div class="horoscope-advice-box">
+            <span class="material-symbols-rounded horoscope-quote-icon">format_quote</span>
+            <p class="horoscope-advice-text" id="horoAdviceText">A carregar o conselho estelar...</p>
+          </div>
+
+          <div class="horoscope-meta-row">
+            <div class="horo-meta-item">
+              <span class="horo-meta-label">Elemento</span>
+              <span class="horo-meta-val" id="horoMetaElement">Fogo</span>
+            </div>
+            <div class="horo-meta-item">
+              <span class="horo-meta-label">Regente</span>
+              <span class="horo-meta-val" id="horoMetaRuler">Marte</span>
+            </div>
+            <div class="horo-meta-item">
+              <span class="horo-meta-label">Cor da Sorte</span>
+              <span class="horo-meta-val" id="horoMetaColor">Terracota</span>
+            </div>
+            <div class="horo-meta-item">
+              <span class="horo-meta-label">N.º da Sorte</span>
+              <span class="horo-meta-val" id="horoMetaNumber">7</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
   </main>
 
   <!-- ====================================================================
@@ -154,12 +355,33 @@
         <span class="material-symbols-rounded">close</span>
       </button>
     </div>
+    <!-- SELETOR DE ABAS DO BOTTOM SHEET -->
+    <div class="sheet-tabs-container">
+      <button class="sheet-tab-chip active" id="tabSheetEvents" type="button">
+        <span class="material-symbols-rounded" style="font-size:18px;">event</span>
+        <span>Comemorações</span>
+        <span class="sheet-chip-counter" id="sheetEventsBadge">0</span>
+      </button>
+      <button class="sheet-tab-chip" id="tabSheetCelebrities" type="button">
+        <span class="material-symbols-rounded" style="font-size:18px; color:#e52592;">cake</span>
+        <span>Aniversários Famosos</span>
+        <span class="sheet-chip-counter" id="sheetCelebsBadge">...</span>
+      </button>
+    </div>
+
     <div class="sheet-swipe-hint">
       <span class="material-symbols-rounded" style="font-size:15px; color:var(--primary);">swipe</span>
       <span>Desliza para a esquerda ou direita para mudar de dia</span>
     </div>
+
+    <!-- CORPO 1: COMEMORAÇÕES -->
     <div class="sheet-body" id="sheetEventsList">
       <!-- Inserido dinamicamente por JS -->
+    </div>
+
+    <!-- CORPO 2: ANIVERSÁRIOS FAMOSOS -->
+    <div class="sheet-body" id="sheetCelebritiesList" style="display: none;">
+      <!-- Carregado via Wikipedia API -->
     </div>
   </div>
 
@@ -238,6 +460,12 @@
         <span class="item-badge" id="drawerFavoritesCount">0</span>
       </button>
 
+      <button class="drawer-item" id="drawerNavAstro">
+        <span class="material-symbols-rounded" style="color: #f59e0b;">wb_sunny</span>
+        <span>Astrologia & Mística</span>
+        <span class="item-badge" id="drawerMoonPhaseBadge">🌕</span>
+      </button>
+
       <div style="height: 1px; background: var(--border-light); margin: 8px 0;"></div>
 
       <button class="drawer-item" id="drawerNavToday">
@@ -269,6 +497,10 @@
       <span class="material-symbols-rounded tab-icon">view_agenda</span>
       <span class="tab-label">Programação</span>
     </button>
+    <button class="nav-tab-btn" id="tabAstro" aria-label="Astrologia">
+      <span class="material-symbols-rounded tab-icon">wb_sunny</span>
+      <span class="tab-label">Astrologia</span>
+    </button>
     <button class="nav-tab-btn" id="tabSearch" aria-label="Pesquisar">
       <span class="material-symbols-rounded tab-icon">search</span>
       <span class="tab-label">Pesquisar</span>
@@ -281,6 +513,7 @@
 
   <!-- Scripts -->
   <script src="data.js"></script>
+  <script src="astro-service.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

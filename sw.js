@@ -1,9 +1,10 @@
-const CACHE_NAME = 'calendario-datas-v2';
+const CACHE_NAME = 'calendario-datas-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
   './app.js',
+  './astro-service.js',
   './data.js',
   './manifest.json'
 ];

@@ -846,6 +846,225 @@ body {
   margin-top: 2px;
 }
 
+/* Sheet Tabs Bar */
+.sheet-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sheet-tab-chip {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  flex: 1;
+  justify-content: center;
+}
+
+.sheet-tab-chip:hover {
+  background-color: var(--bg-surface-variant);
+  color: var(--text-main);
+}
+
+.sheet-tab-chip.active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(26, 115, 232, 0.3);
+}
+
+.sheet-tab-chip.active .material-symbols-rounded {
+  color: #fff !important;
+}
+
+.sheet-chip-counter {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-variant);
+  color: var(--text-muted);
+}
+
+.sheet-tab-chip.active .sheet-chip-counter {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+/* Celebrity Cards */
+.celeb-search-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-main);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.celeb-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.18s ease;
+}
+
+.celeb-card:hover {
+  border-color: var(--border-color);
+  background: var(--bg-surface-variant);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.celeb-avatar-wrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.celeb-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--bg-surface-variant);
+  border: 2px solid var(--bg-main);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.celeb-avatar-placeholder {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e52592, #9334e6);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.celeb-cake-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .celeb-cake-badge {
+  background: #282a2c;
+}
+
+.celeb-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.celeb-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.celeb-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.celeb-year-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #c2185b;
+  background: #fce4ec;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+}
+
+[data-theme="dark"] .celeb-year-pill {
+  background: #4a152d;
+  color: #f48fb1;
+}
+
+.celeb-extract {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.celeb-wiki-link {
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: color 0.15s, background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.celeb-wiki-link:hover {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.celeb-loading-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  gap: 12px;
+  color: var(--text-muted);
+}
+
+.celeb-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-light);
+  border-top-color: #e52592;
+  border-radius: 50%;
+  animation: spinCeleb 0.8s linear infinite;
+}
+
+@keyframes spinCeleb {
+  to { transform: rotate(360deg); }
+}
+
 .sheet-swipe-hint {
   display: flex;
   align-items: center;
@@ -1307,3 +1526,791 @@ body {
     max-height: 75vh;
   }
 }
+
+/* ==========================================================================
+   ASTROLOGIA & MÍSTICA DIÁRIA
+   ========================================================================== */
+
+/* Toggle Slick do Sol no Cabeçalho */
+.btn-astro-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245, 158, 11, 0.08);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.12);
+}
+
+.btn-astro-toggle:hover {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-astro-toggle .astro-sun-icon {
+  font-size: 19px;
+  color: #f59e0b;
+  transition: transform 0.3s ease;
+}
+
+.btn-astro-toggle:hover .astro-sun-icon {
+  transform: rotate(35deg) scale(1.1);
+}
+
+.btn-astro-toggle.active {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.45);
+}
+
+.btn-astro-toggle.active .astro-sun-icon {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .btn-astro-toggle {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+[data-theme="dark"] .btn-astro-toggle:hover {
+  background: rgba(251, 191, 36, 0.22);
+}
+
+/* Ocultar texto do toggle em ecrãs ultra pequenos para não partir o header */
+@media (max-width: 440px) {
+  .btn-astro-toggle .astro-toggle-text {
+    display: none;
+  }
+  .btn-astro-toggle {
+    padding: 6px 9px;
+  }
+}
+
+/* Contentor da Vista de Astrologia */
+.astrology-view {
+  padding: 16px 16px 90px 16px;
+  max-width: 980px;
+  margin: 0 auto;
+  animation: fadeInAstro 0.25s ease-out;
+}
+
+@keyframes fadeInAstro {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Banner */
+.astro-hero-card {
+  background: linear-gradient(135deg, #fffbeb 0%, #ede9fe 45%, #e0e7ff 100%);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .astro-hero-card {
+  background: linear-gradient(135deg, #1e1b4b 0%, #172554 50%, #0f172a 100%);
+  border-color: #312e81;
+}
+
+.astro-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #4f46e5;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+[data-theme="dark"] .astro-hero-badge {
+  background: rgba(129, 140, 248, 0.2);
+  color: #a5b4fc;
+}
+
+.astro-hero-title {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+}
+
+.astro-hero-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Grelhas */
+.astro-grid-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* Cartões Base */
+.astro-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.astro-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.astro-card-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  display: block;
+}
+
+.astro-card-title {
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+.astro-card-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* Lua Visual & Detalhes */
+.moon-display-wrap {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.moon-visual-sphere {
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.moon-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.18));
+}
+
+.moon-phase-info {
+  flex: 1;
+}
+
+.moon-phase-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.moon-illumination-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.moon-illumination-pct {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+.moon-illumination-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.moon-progress-bar {
+  height: 6px;
+  background-color: var(--bg-surface-variant);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 6px 0 8px 0;
+}
+
+.moon-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.moon-phase-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.moon-next-events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+  margin-top: auto;
+}
+
+.next-event-chip {
+  background: var(--bg-surface-variant);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 80px;
+}
+
+.next-event-chip .event-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.next-event-chip .event-days {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 2px;
+}
+
+/* Trânsito Solar */
+.sun-transit-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.sun-sign-symbol {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.25) 100%);
+  color: #d97706;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .sun-sign-symbol {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%);
+  color: #fbbf24;
+}
+
+.sun-sign-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sun-sign-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.astro-pill {
+  background: var(--bg-surface-variant);
+  color: var(--text-main);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 600;
+}
+
+.sun-constellation-box {
+  background: var(--bg-surface-variant);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-top: auto;
+}
+
+.constellation-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-main);
+}
+
+.constellation-explainer {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Radar de Retrogradação */
+.retrograde-card {
+  margin-bottom: 16px;
+}
+
+.retrograde-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.planet-retrograde-box {
+  background: var(--bg-surface-variant);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.planet-retrograde-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.planet-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.planet-symbol {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.planet-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.planet-domain {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: block;
+}
+
+.retrograde-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.retrograde-badge-success {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+[data-theme="dark"] .retrograde-badge-success {
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+}
+
+.retrograde-badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  animation: pulseWarning 2s infinite ease-in-out;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.planet-advice {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  line-height: 1.45;
+  margin-bottom: 8px;
+}
+
+.planet-dates {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Horóscopo dos 12 Signos */
+.zodiac-chips-bar {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.zodiac-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface-variant);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  padding: 8px 14px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.zodiac-chip-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.zodiac-chip-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.35);
+}
+
+.zodiac-chip-symbol {
+  font-size: 16px;
+}
+
+.horoscope-active-content {
+  background: var(--bg-surface-variant);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  border: 1px solid var(--border-light);
+}
+
+.horoscope-sign-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.horoscope-symbol-large {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: bold;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.horoscope-sign-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.horoscope-sign-dates {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.horoscope-vibe-pill {
+  margin-left: auto;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+  color: #db2777;
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+[data-theme="dark"] .horoscope-vibe-pill {
+  color: #f472b6;
+}
+
+.horoscope-advice-box {
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+  position: relative;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.horoscope-quote-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 32px;
+  color: var(--primary);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.horoscope-advice-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  position: relative;
+  z-index: 1;
+}
+
+.horoscope-meta-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.horo-meta-item {
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.horo-meta-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.horo-meta-val {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   TEMA ROXO / PÚRPURA CÓSMICO (QUANDO NA SECÇÃO DE ASTROLOGIA)
+   ========================================================================== */
+body.astro-theme-active {
+  background: radial-gradient(ellipse at 50% 0%, #2e1065 0%, #180738 50%, #0b021d 100%) fixed !important;
+  color: #f3e8ff !important;
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+/* Header Adaptado ao Roxo */
+body.astro-theme-active .app-header {
+  background: rgba(24, 7, 56, 0.88) !important;
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.22) !important;
+  box-shadow: 0 4px 20px rgba(11, 2, 29, 0.5) !important;
+}
+
+body.astro-theme-active .header-title-btn {
+  color: #f3e8ff !important;
+}
+
+body.astro-theme-active .icon-btn {
+  color: #c084fc !important;
+}
+
+body.astro-theme-active .icon-btn:hover {
+  background-color: rgba(168, 85, 247, 0.18) !important;
+  color: #ffffff !important;
+}
+
+body.astro-theme-active .btn-today {
+  border-color: rgba(168, 85, 247, 0.4) !important;
+  color: #c084fc !important;
+}
+
+body.astro-theme-active .btn-today:hover {
+  background-color: rgba(168, 85, 247, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* Barra de Navegação Inferior Adaptada */
+body.astro-theme-active .bottom-nav-bar {
+  background: rgba(24, 7, 56, 0.92) !important;
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  border-top: 1px solid rgba(168, 85, 247, 0.22) !important;
+}
+
+body.astro-theme-active .nav-tab-btn {
+  color: #a855f7 !important;
+}
+
+body.astro-theme-active .nav-tab-btn.active {
+  color: #fbbf24 !important;
+}
+
+/* Hero Banner em Roxo Translúcido */
+body.astro-theme-active .astro-hero-card {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.55) 0%, rgba(59, 7, 100, 0.7) 100%) !important;
+  border: 1px solid rgba(192, 132, 252, 0.3) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(11, 2, 29, 0.45) !important;
+}
+
+body.astro-theme-active .astro-hero-title {
+  color: #ffffff !important;
+  text-shadow: 0 0 12px rgba(192, 132, 252, 0.4);
+}
+
+body.astro-theme-active .astro-hero-subtitle {
+  color: #e9d5ff !important;
+}
+
+body.astro-theme-active .astro-hero-badge {
+  background: rgba(168, 85, 247, 0.25) !important;
+  color: #f3e8ff !important;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+/* Cartões Místicos em Vidro Roxo (Glassmorphism) */
+body.astro-theme-active .astro-card {
+  background-color: rgba(36, 12, 77, 0.75) !important;
+  border: 1px solid rgba(168, 85, 247, 0.25) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(11, 2, 29, 0.35) !important;
+}
+
+body.astro-theme-active .astro-card-title,
+body.astro-theme-active .moon-phase-name,
+body.astro-theme-active .sun-sign-name,
+body.astro-theme-active .planet-name,
+body.astro-theme-active .horoscope-sign-title {
+  color: #faf5ff !important;
+}
+
+body.astro-theme-active .astro-card-tag,
+body.astro-theme-active .moon-phase-desc,
+body.astro-theme-active .moon-illumination-label,
+body.astro-theme-active .constellation-explainer,
+body.astro-theme-active .planet-domain,
+body.astro-theme-active .planet-dates,
+body.astro-theme-active .horoscope-sign-dates,
+body.astro-theme-active .horo-meta-label {
+  color: #c4b5fd !important;
+}
+
+/* Elementos Secundários nos Cartões */
+body.astro-theme-active .next-event-chip,
+body.astro-theme-active .sun-constellation-box,
+body.astro-theme-active .planet-retrograde-box,
+body.astro-theme-active .horoscope-active-content,
+body.astro-theme-active .horo-meta-item,
+body.astro-theme-active .zodiac-chip-btn {
+  background: rgba(59, 19, 120, 0.45) !important;
+  border: 1px solid rgba(168, 85, 247, 0.2) !important;
+  color: #ede9fe !important;
+}
+
+body.astro-theme-active .astro-pill {
+  background: rgba(168, 85, 247, 0.22) !important;
+  color: #f3e8ff !important;
+  border: 1px solid rgba(192, 132, 252, 0.2);
+}
+
+body.astro-theme-active .zodiac-chip-btn:hover {
+  background: rgba(168, 85, 247, 0.3) !important;
+  border-color: rgba(192, 132, 252, 0.5) !important;
+}
+
+body.astro-theme-active .zodiac-chip-btn.active {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+  color: #ffffff !important;
+  border-color: #c084fc !important;
+  box-shadow: 0 2px 14px rgba(147, 51, 234, 0.5) !important;
+}
+
+body.astro-theme-active .horoscope-advice-box {
+  background: rgba(22, 6, 52, 0.65) !important;
+  border: 1px solid rgba(168, 85, 247, 0.22) !important;
+}
+
+body.astro-theme-active .horoscope-advice-text,
+body.astro-theme-active .planet-advice,
+body.astro-theme-active .constellation-header,
+body.astro-theme-active .horo-meta-val {
+  color: #f5f3ff !important;
+}
+
+body.astro-theme-active .planet-symbol,
+body.astro-theme-active .horoscope-symbol-large {
+  background: rgba(59, 19, 120, 0.7) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(192, 132, 252, 0.3) !important;
+}
+
+

@@ -797,7 +797,7 @@ function createAgendaEventCard(evt) {
       <div>
         <span class="agenda-card-category">${escapeHtml(evt.category)}</span>
       </div>
-      ${evt.url ? `<div class="agenda-card-link-hint"><span class="material-symbols-rounded" style="font-size:14px;">open_in_new</span> Ver no Calendarr</div>` : ''}
+      ${evt.url ? `<div class="agenda-card-link-hint"><span class="material-symbols-rounded" style="font-size:14px;">open_in_new</span> ${evt.url.includes('wikipedia.org') ? 'Ver na Wikipédia' : 'Ver no Calendarr'}</div>` : ''}
     </div>
     <button class="icon-btn btn-fav" style="width:32px; height:32px; color:${isFav ? '#f9ab00' : 'var(--text-subtle)'};" title="Guardar nos Favoritos">
       <span class="material-symbols-rounded" style="font-size:20px;">${isFav ? 'star' : 'star_border'}</span>
@@ -1001,9 +1001,9 @@ function renderBottomSheetContent(dateStr, animDirection = null) {
 
         <div class="sheet-event-actions">
           ${evt.url ? `
-            <a href="${evt.url}" target="_blank" rel="noopener noreferrer" class="sheet-action-btn">
+            <a href="${evt.url}" target="_blank" rel="noopener noreferrer" class="sheet-action-btn" title="${evt.url.includes('wikipedia.org') ? 'Ver na Wikipédia' : 'Saber Mais no Calendarr'}">
               <span class="material-symbols-rounded" style="font-size:16px;">open_in_new</span>
-              Saber Mais
+              ${evt.url.includes('wikipedia.org') ? 'Wikipédia' : 'Saber Mais'}
             </a>
           ` : ''}
 
